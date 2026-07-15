@@ -2,12 +2,13 @@ package com.snehfoundation.salaryslip.controller;
 
 import com.snehfoundation.salaryslip.exception.SalarySlipNotFoundException;
 import com.snehfoundation.salaryslip.model.Employee;
-import com.snehfoundation.salaryslip.service.EmployeeStore;
 import com.snehfoundation.salaryslip.service.PdfService;
 import com.snehfoundation.salaryslip.service.ZipService;
+import com.snehfoundation.salaryslip.util.EmployeeSessionHelper;
 import com.snehfoundation.salaryslip.util.LogoProvider;
 import com.snehfoundation.salaryslip.util.NumberToWordsConverter;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -24,23 +25,24 @@ import java.util.List;
 
 /**
  * Renders the salary slip HTML directly in the browser, and generates PDFs
- * (single or bulk-as-ZIP) entirely in memory -- this app is stateless, so
- * there is no "Generate" step separate from "Download": clicking Download
- * renders and streams the PDF in the same request.
+ * (single or bulk-as-ZIP) entirely in memory. All employee lookups come from
+ * the current user's own {@code HttpSession} via {@link EmployeeSessionHelper}
+ * -- never from any shared/singleton service -- so one user can never
+ * preview, download, or ZIP another user's uploaded salary data.
  */
 @Controller
 @RequiredArgsConstructor
 public class SalarySlipController {
 
-    private final EmployeeStore employeeStore;
+    private final EmployeeSessionHelper employeeSessionHelper;
     private final NumberToWordsConverter numberToWordsConverter;
     private final PdfService pdfService;
     private final ZipService zipService;
     private final LogoProvider logoProvider;
 
     @GetMapping("/preview/{employeeId}")
-    public String preview(@PathVariable String employeeId, Model model) {
-        Employee employee = findEmployeeOrThrow(employeeId);
+    public String preview(@PathVariable String employeeId, HttpSession session, Model model) {
+        Employee employee = findEmployeeOrThrow(session, employeeId);
 
         model.addAttribute("employee", employee);
         model.addAttribute("amountInWords", numberToWordsConverter.toWords(employee.getNetPay()));
@@ -55,8 +57,8 @@ public class SalarySlipController {
      */
     @GetMapping("/download/{employeeId}")
     @ResponseBody
-    public ResponseEntity<byte[]> download(@PathVariable String employeeId) throws IOException {
-        Employee employee = findEmployeeOrThrow(employeeId);
+    public ResponseEntity<byte[]> download(@PathVariable String employeeId, HttpSession session) throws IOException {
+        Employee employee = findEmployeeOrThrow(session, employeeId);
 
         byte[] pdfBytes = pdfService.generate(employee);
         String downloadName = buildDownloadFilename(employee);
@@ -68,13 +70,13 @@ public class SalarySlipController {
     }
 
     /**
-     * Generates every employee's slip in memory and streams them back as one
-     * ZIP. There's no "Generate All" step anymore -- this does the generating
-     * and the zipping in a single request.
+     * Generates every employee in *this session's* list in memory and
+     * streams them back as one ZIP.
      */
     @GetMapping("/download-all")
-    public String downloadAllZip(HttpServletResponse response, RedirectAttributes redirectAttributes) throws IOException {
-        List<Employee> employees = employeeStore.getAll();
+    public String downloadAllZip(HttpSession session, HttpServletResponse response,
+                                 RedirectAttributes redirectAttributes) throws IOException {
+        List<Employee> employees = employeeSessionHelper.getEmployees(session);
 
         if (employees.isEmpty()) {
             redirectAttributes.addFlashAttribute("uploadError",
@@ -96,10 +98,10 @@ public class SalarySlipController {
         return null;
     }
 
-    private Employee findEmployeeOrThrow(String employeeId) {
-        return employeeStore.findByEmployeeId(employeeId)
+    private Employee findEmployeeOrThrow(HttpSession session, String employeeId) {
+        return employeeSessionHelper.findByEmployeeId(session, employeeId)
                 .orElseThrow(() -> new SalarySlipNotFoundException(
-                        "No employee found with ID: " + employeeId + ". It may have been removed by a newer Excel upload."));
+                        "No employee found with ID: " + employeeId + ". It may have been cleared, replaced by a newer upload, or your session may have expired."));
     }
 
     /** Same [A-Za-z0-9_-] sanitization as Employee.getFileSafeIdentifier(), so downloads save cleanly on Windows/macOS/Linux alike. */

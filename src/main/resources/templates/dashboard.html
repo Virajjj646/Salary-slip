@@ -94,9 +94,17 @@
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h2 class="card-title h6 text-uppercase text-muted mb-0">Employees</h2>
-                <a th:href="@{/download-all}" class="btn btn-brand-outline btn-sm">
-                    <i class="bi bi-file-zip-fill me-1"></i>Download All (ZIP)
-                </a>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/download-all}" class="btn btn-brand-outline btn-sm">
+                        <i class="bi bi-file-zip-fill me-1"></i>Download All (ZIP)
+                    </a>
+                    <form th:action="@{/clear-data}" method="post"
+                          onsubmit="return confirm('Clear all uploaded employee data from this session? This cannot be undone.');">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash3-fill me-1"></i>Clear Uploaded Data
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <div class="mb-3">

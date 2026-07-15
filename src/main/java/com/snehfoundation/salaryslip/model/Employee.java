@@ -5,14 +5,21 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
  * Domain object representing a single employee's salary record for a given month.
  * <p>
  * This is a direct, one-row-per-instance mapping of the uploaded Excel sheet.
- * There is no database — instances of this class live only in memory for the
- * duration of the current uploaded batch (see {@link com.snehfoundation.salaryslip.service.EmployeeStore}).
+ * There is no database and no shared application-level storage -- instances
+ * of this class live only inside the uploading user's own {@code HttpSession}
+ * (see {@link com.snehfoundation.salaryslip.util.EmployeeSessionHelper}), so
+ * one user's data is never visible to another user.
+ * <p>
+ * Implements {@link Serializable} because it's stored as an HttpSession
+ * attribute -- standard practice for session-scoped data, so the servlet
+ * container can persist/replicate sessions without warnings if it ever needs to.
  * <p>
  * Column mapping (confirmed against the real SNEH Foundation dummy dataset):
  * Month | Employee Name | Employee ID | Project | Designation | Aadhaar | PAN |
@@ -31,7 +38,9 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Employee {
+public class Employee implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** e.g. "May 2026" -- shown on the dashboard and the salary slip itself. */
     private String month;
@@ -85,11 +94,6 @@ public class Employee {
         return totalEarnings.subtract(netPay);
     }
 
-    /**
-     * Collision-safe identifier used for PDF filenames, e.g. "E-001_Archana_Patil".
-     * Several employees in the real dataset share the same name across different
-     * months/IDs, so name alone is not safe as a filename key.
-     */
     /**
      * Collision-safe identifier used for PDF/ZIP-entry filenames, e.g.
      * "E-001_Archana_Patil". Several employees in the real dataset share the
