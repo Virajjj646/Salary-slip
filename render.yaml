@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: sneh-salary-slip-management
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # Render sets PORT automatically; application.properties already
+      # reads server.port=${PORT:8080}, so no extra config needed here.

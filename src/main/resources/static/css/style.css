@@ -1,0 +1,141 @@
+:root {
+    --sneh-navy: #1e3a5f;
+    --sneh-navy-dark: #142943;
+    --sneh-maroon: #7a1f3d;
+    --sneh-maroon-dark: #5e1730;
+    --sneh-bg: #f6f7f9;
+    --sneh-border: #e3e6ec;
+}
+
+body {
+    background-color: var(--sneh-bg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #22262e;
+}
+
+h1, h2, h3, .brand-title, .stat-value {
+    font-family: 'Sora', system-ui, sans-serif;
+}
+
+/* ---------- Header ---------- */
+.app-header {
+    background: linear-gradient(135deg, var(--sneh-navy) 0%, var(--sneh-navy-dark) 100%);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(20, 41, 67, 0.25);
+}
+
+.brand-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--sneh-maroon);
+    color: #fff;
+    font-family: 'Sora', sans-serif;
+    font-weight: 800;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-logo-img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.brand-title {
+    font-weight: 700;
+    font-size: 1.15rem;
+    line-height: 1.2;
+}
+
+.brand-subtitle {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.header-meta {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.3px;
+}
+
+/* ---------- Cards ---------- */
+.card {
+    border: 1px solid var(--sneh-border);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(20, 41, 67, 0.06);
+}
+
+.form-hint {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.stat-card .stat-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--sneh-navy);
+    line-height: 1.1;
+}
+
+.stat-card .stat-label {
+    font-size: 0.78rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 4px;
+}
+
+/* ---------- Buttons ---------- */
+.btn-brand {
+    background-color: var(--sneh-maroon);
+    border-color: var(--sneh-maroon);
+    color: #fff;
+}
+.btn-brand:hover, .btn-brand:focus {
+    background-color: var(--sneh-maroon-dark);
+    border-color: var(--sneh-maroon-dark);
+    color: #fff;
+}
+
+.btn-brand-outline {
+    border-color: var(--sneh-maroon);
+    color: var(--sneh-maroon);
+    background: transparent;
+}
+.btn-brand-outline:hover {
+    background-color: var(--sneh-maroon);
+    color: #fff;
+}
+
+.btn.disabled,
+a.btn.disabled {
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+/* ---------- Table ---------- */
+.table thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #6b7280;
+    border-bottom-width: 1px;
+    font-weight: 600;
+}
+
+/* ---------- Empty state ---------- */
+.empty-state {
+    background: #fff;
+    border: 1px dashed var(--sneh-border);
+    border-radius: 12px;
+}
+
+/* ---------- Footer ---------- */
+.app-footer {
+    color: #9aa1ac;
+}

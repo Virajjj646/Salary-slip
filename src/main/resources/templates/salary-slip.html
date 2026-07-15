@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="'Salary Slip - ' + ${employee.name} + ' - ' + ${employee.month}">Salary Slip</title>
+    <style>
+        /*
+          Styles are embedded directly (not linked) on purpose: OpenHTMLToPDF
+          (Module 6) renders this exact same template to PDF, and inline/embedded
+          CSS avoids any relative-URL/base-URI resolution issues at PDF-render time.
+        */
+        @page {
+            size: A4;
+            margin: 18mm 14mm;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #1a1a1a;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+        }
+        .slip {
+            border: 1.5px solid #1e3a5f;
+            padding: 22px 26px;
+        }
+
+        /* Header */
+        .header-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .header-logo {
+            display: table-cell;
+            width: 60px;
+            vertical-align: middle;
+        }
+        .logo-badge {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #7a1f3d;
+            color: #fff;
+            text-align: center;
+            line-height: 52px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .logo-img {
+            max-width: 60px;
+            max-height: 60px;
+            object-fit: contain;
+        }
+        .header-text {
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 14px;
+        }
+        .org-name {
+            font-size: 22px;
+            font-weight: bold;
+            text-decoration: underline;
+            color: #1a1a1a;
+            margin: 0 0 4px 0;
+        }
+        .org-address {
+            font-size: 11px;
+            line-height: 1.5;
+            color: #333;
+            margin: 0;
+        }
+        .header-divider {
+            border-top: 2px solid #1a1a1a;
+            margin: 10px 0 14px 0;
+        }
+
+        /* Employee info block */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+        .info-table td {
+            padding: 3px 0;
+            font-size: 12px;
+            vertical-align: top;
+        }
+        .info-label {
+            width: 34%;
+            color: #333;
+        }
+        .info-colon {
+            width: 3%;
+        }
+
+        /* Section titles */
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin: 14px 0 8px 0;
+            color: #1a1a1a;
+        }
+
+        /* Earnings / Deductions tables */
+        .amount-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .amount-table th {
+            background: #6f8fb5;
+            color: #fff;
+            text-align: left;
+            padding: 6px 10px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+        .amount-table th.amount-col, .amount-table td.amount-col {
+            text-align: right;
+        }
+        .amount-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #dbe2ea;
+            font-size: 12px;
+        }
+        .amount-table tr.total-row td {
+            border-top: 1.5px solid #1a1a1a;
+            border-bottom: none;
+            font-weight: bold;
+            padding-top: 8px;
+        }
+
+        /* Net pay block */
+        .net-pay-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+        }
+        .net-pay-table td {
+            padding: 3px 0;
+            font-size: 12.5px;
+        }
+        .net-pay-label {
+            width: 22%;
+            color: #333;
+        }
+        .net-pay-amount {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Footer */
+        .footer-row {
+            display: table;
+            width: 100%;
+            margin-top: 22px;
+            border-top: 1px solid #ccc;
+            padding-top: 12px;
+        }
+        .footer-seal {
+            display: table-cell;
+            width: 60px;
+            vertical-align: middle;
+        }
+        .seal-badge {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px solid #1e3a5f;
+            text-align: center;
+            line-height: 44px;
+            font-size: 8px;
+            font-weight: bold;
+            color: #1e3a5f;
+        }
+        .seal-img {
+            max-width: 50px;
+            max-height: 50px;
+            object-fit: contain;
+        }
+        .footer-text {
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 14px;
+            font-size: 10.5px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .footer-text a { color: #1e3a5f; }
+    </style>
+</head>
+<body>
+<div class="slip">
+
+    <!-- Header -->
+    <div class="header-row">
+        <div class="header-logo">
+            <img th:if="${logoDataUri}" th:src="${logoDataUri}" class="logo-img" alt="SNEH Foundation logo"/>
+            <div th:unless="${logoDataUri}" class="logo-badge">SNEH</div>
+        </div>
+        <div class="header-text">
+            <p class="org-name">SNEH Foundation</p>
+            <p class="org-address">
+                Laxmideep Apartment, next to Jainam Collection, Tapkir Nagar, Jyotiba Nagar,<br/>
+                Kalewadi, Pimpri-Chinchwad, Maharashtra 411017 · Phone: +91 9028117700
+            </p>
+        </div>
+    </div>
+    <div class="header-divider"></div>
+
+    <!-- Employee info -->
+    <table class="info-table">
+        <tr><td class="info-label">Month</td><td class="info-colon">:</td><td th:text="${employee.month}">Month</td></tr>
+        <tr><td class="info-label">Employee Name</td><td class="info-colon">:</td><td th:text="${employee.name}">Name</td></tr>
+        <tr><td class="info-label">Employee ID</td><td class="info-colon">:</td><td th:text="${employee.employeeId}">ID</td></tr>
+        <tr><td class="info-label">Project</td><td class="info-colon">:</td><td th:text="${employee.project}">Project</td></tr>
+        <tr><td class="info-label">Designation</td><td class="info-colon">:</td><td th:text="${employee.designation}">Designation</td></tr>
+        <tr><td class="info-label">Aadhaar</td><td class="info-colon">:</td><td th:text="${employee.aadhaar}">Aadhaar</td></tr>
+        <tr><td class="info-label">PAN</td><td class="info-colon">:</td><td th:text="${employee.pan}">PAN</td></tr>
+        <tr><td class="info-label">Reporting Branch</td><td class="info-colon">:</td><td th:text="${employee.reportingBranch}">Branch</td></tr>
+        <tr><td class="info-label">Days Calculated</td><td class="info-colon">:</td><td th:text="${employee.daysCalculated}">30</td></tr>
+    </table>
+
+    <!-- Earnings -->
+    <p class="section-title">Earnings</p>
+    <table class="amount-table">
+        <thead>
+        <tr><th>Description</th><th class="amount-col">Amount (INR)</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Basic Salary</td>
+            <td class="amount-col" th:text="${#numbers.formatDecimal(employee.basicSalary, 1, 'COMMA', 0, 'POINT')}">0</td>
+        </tr>
+        <tr>
+            <td>HRA</td>
+            <td class="amount-col" th:text="${#numbers.formatDecimal(employee.hra, 1, 'COMMA', 0, 'POINT')}">0</td>
+        </tr>
+        <tr>
+            <td>Special Allowance</td>
+            <td class="amount-col" th:text="${#numbers.formatDecimal(employee.specialAllowance, 1, 'COMMA', 0, 'POINT')}">0</td>
+        </tr>
+        <tr>
+            <td>Conveyance</td>
+            <td class="amount-col" th:text="${#numbers.formatDecimal(employee.conveyance, 1, 'COMMA', 0, 'POINT')}">0</td>
+        </tr>
+        <tr>
+            <td>Reimbursement</td>
+            <td class="amount-col" th:text="${#numbers.formatDecimal(employee.reimbursement, 1, 'COMMA', 0, 'POINT')}">0</td>
+        </tr>
+        <tr class="total-row">
+            <td>Total Earnings</td>
+            <td class="amount-col" th:text="${#numbers.formatDecimal(employee.totalEarnings, 1, 'COMMA', 0, 'POINT')}">0</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Deductions -->
+    <p class="section-title">Deductions</p>
+    <table class="amount-table">
+        <thead>
+        <tr><th>Description</th><th class="amount-col">Amount (INR)</th></tr>
+        </thead>
+        <tbody>
+        <tr th:if="${employee.deductions.compareTo(T(java.math.BigDecimal).ZERO) == 0}">
+            <td>—</td>
+            <td class="amount-col">0</td>
+        </tr>
+        <tr th:unless="${employee.deductions.compareTo(T(java.math.BigDecimal).ZERO) == 0}">
+            <td>Deductions</td>
+            <td class="amount-col" th:text="${#numbers.formatDecimal(employee.deductions, 1, 'COMMA', 0, 'POINT')}">0</td>
+        </tr>
+        <tr class="total-row">
+            <td>Total Deductions</td>
+            <td class="amount-col" th:text="${#numbers.formatDecimal(employee.deductions, 1, 'COMMA', 0, 'POINT')}">0</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Net pay -->
+    <table class="net-pay-table">
+        <tr>
+            <td class="net-pay-label">Net Pay</td>
+            <td>:</td>
+            <td class="net-pay-amount" th:text="${'Rs. ' + #numbers.formatDecimal(employee.netPay, 1, 'COMMA', 0, 'POINT')}">Rs. 0</td>
+        </tr>
+        <tr>
+            <td class="net-pay-label">In Words</td>
+            <td>:</td>
+            <td th:text="${amountInWords}">Amount in words</td>
+        </tr>
+        <tr>
+            <td class="net-pay-label">Payment Mode</td>
+            <td>:</td>
+            <td th:text="${employee.paymentMode}">Payment Mode</td>
+        </tr>
+    </table>
+
+    <!-- Footer -->
+    <div class="footer-row">
+        <div class="footer-seal">
+            <img th:if="${logoDataUri}" th:src="${logoDataUri}" class="seal-img" alt="SNEH Foundation seal"/>
+            <div th:unless="${logoDataUri}" class="seal-badge">SNEH<br/>SEAL</div>
+        </div>
+        <div class="footer-text">
+            SNEH Foundation, Pune (M.H.) · Head Office: +91 9028117700<br/>
+            Alternate: +91 9422987709, 9561733378<br/>
+            Registered under 12A, 80G and FCRA · Legal Identity (IT PAN): AAMTS4936R<br/>
+            Email: <a href="mailto:mail@snehfoundationindia.org">mail@snehfoundationindia.org</a>
+            · Website: <a href="https://www.snehfoundationindia.org">www.snehfoundationindia.org</a>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
